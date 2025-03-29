@@ -1,88 +1,36 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/app/lib/mongodb';
-import { Filter, WithId, Document } from 'mongodb';
-
-interface Product extends Document {
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  subcategory?: string;
-  images: string[];
-  location: {
-    city: string;
-    state: string;
-    country: string;
-  };
-  rating: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-type ProductQuery = Filter<WithId<Product>>;
+import connectDB from '@/app/lib/mongodb';
+import Product from '@/app/models/Product';
 
 export async function GET(request: Request) {
   try {
+    await connectDB();
+    
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
-    const subcategory = searchParams.get('subcategory');
-    const search = searchParams.get('search');
     const city = searchParams.get('city');
-    const priceRange = searchParams.get('priceRange');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
-
-    const client = await clientPromise;
-    const db = client.db('renteraz');
-    const collection = db.collection<Product>('products');
-
-    // Build query
-    const query: ProductQuery = {};
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    
+    let query: any = {};
     
     if (category) {
       query.category = category;
-    }
-    
-    if (subcategory) {
-      query.subcategory = subcategory;
     }
     
     if (city) {
       query['location.city'] = city;
     }
     
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
     }
     
-    if (priceRange) {
-      const [min, max] = priceRange.split('-').map(Number);
-      if (max) {
-        query.price = { $gte: min, $lte: max };
-      } else {
-        query.price = { $gte: min };
-      }
-    }
-
-    // Get total count for pagination
-    const total = await collection.countDocuments(query);
-
-    // Get paginated results
-    const products = await collection
-      .find(query)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .toArray();
-
-    return NextResponse.json({
-      products,
-      total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page
-    });
+    const products = await Product.find(query);
+    
+    return NextResponse.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
@@ -94,18 +42,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await connectDB();
     const body = await request.json();
-    const client = await clientPromise;
-    const db = client.db('renteraz');
-    const collection = db.collection('products');
-
-    const result = await collection.insertOne({
+    
+    const product = await Product.create({
       ...body,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json(product);
   } catch (error) {
     console.error('Error creating product:', error);
     return NextResponse.json(

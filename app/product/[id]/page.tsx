@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
@@ -19,9 +19,9 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { products } from '@/app/data/products';
 import Image from 'next/image';
 import Script from 'next/script';
+import { Product } from '@/app/lib/api';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -33,9 +33,36 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Convert string ID to number for comparison
-  const product = products.find(p => p.id === parseInt(params.id));
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(`/api/products/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Product not found');
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        notFound();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.id]);
+
+  if (isLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   if (!product) {
     notFound();

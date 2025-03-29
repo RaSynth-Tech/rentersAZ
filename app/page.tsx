@@ -1,14 +1,36 @@
 'use client';
 
 import { Box, Grid, Container, Button, Stack, CircularProgress } from '@mui/material';
-import { Suspense } from 'react';
-import { products } from './data/products';
+import { Suspense, useState, useEffect } from 'react';
 import Script from 'next/script';
 import { useProductFilters } from './hooks/useProductFilters';
-import { ProductCard } from './components/ProductCard';
+import ProductCard from './components/ProductCard';
 import { Filters } from './components/Filters';
+import type { Product } from './types/product';
+
+const ITEMS_PER_PAGE = 12;
 
 function ProductGridContent() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        console.log(data);
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const {
     filters,
     updateFilter,
@@ -17,6 +39,22 @@ function ProductGridContent() {
     displayCount,
     handleLoadMore,
   } = useProductFilters(products);
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const handleLoadMoreClick = async () => {
+    setIsLoadingMore(true);
+    await handleLoadMore();
+    setIsLoadingMore(false);
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
@@ -40,15 +78,16 @@ function ProductGridContent() {
             <Stack spacing={2} alignItems="center" sx={{ mt: 4 }}>
               <Button
                 variant="contained"
-                onClick={handleLoadMore}
+                onClick={handleLoadMoreClick}
                 size="large"
+                disabled={isLoadingMore}
                 sx={{ 
                   minWidth: 200,
                   textTransform: 'none',
                   fontWeight: 500,
                 }}
               >
-                Load More
+                {isLoadingMore ? 'Loading...' : 'Load More'}
               </Button>
             </Stack>
           )}
