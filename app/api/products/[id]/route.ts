@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/app/lib/mongodb';
+import Product from '@/app/models/Product';
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const client = await clientPromise;
-    const db = client.db('renteraz');
-    const collection = db.collection('products');
-
-    const product = await collection.findOne({
-      _id: new ObjectId(params.id)
-    });
+    await clientPromise;
+    const product = await Product.findById(params.id);
 
     if (!product) {
       return NextResponse.json(
