@@ -39,6 +39,7 @@ export interface Product {
 
 export interface FilterState {
   selectedCategories: string[];
+  selectedSubcategories: Record<string, string[]>;
   searchQuery: string;
   selectedCity: string;
   priceRange: string;
