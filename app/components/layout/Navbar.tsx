@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { config } from '@/app/config/config';
+import LoginModal from '../auth/LoginModal';
 
 // Memoize the search input component
 const SearchInput = memo(({ 
@@ -98,6 +99,7 @@ function NavbarContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -142,14 +144,7 @@ function NavbarContent() {
   }, [router, searchParams]);
 
   const handleLogin = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      const userData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-      };
-      localStorage.setItem('userData', JSON.stringify(userData));
-      setIsLoggedIn(true);
-    }
+    setIsLoginModalOpen(true);
   }, []);
 
   const handleLogout = useCallback(() => {
@@ -256,6 +251,10 @@ function NavbarContent() {
           </Box>
         </Toolbar>
       </Container>
+      <LoginModal 
+        open={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </AppBar>
   );
 }

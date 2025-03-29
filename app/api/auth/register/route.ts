@@ -1,25 +1,26 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/mongodb';
-import { User } from '@/app/models/User';
+import bcrypt from 'bcryptjs';
+import clientPromise from '@/app/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { name, email, password, phone, address } = body;
+    const { name, email, password } = await request.json();
 
-    // Validate required fields
-    if (!name || !email || !password || !phone) {
+    // Validate input
+    if (!name || !email || !password) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Connect to database
-    await connectDB();
+    const client = await clientPromise;
+    const db = client.db('renteraz');
+    const users = db.collection('users');
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await users.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
         { error: 'User already exists' },
@@ -27,26 +28,27 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create new user
-    const user = await User.create({
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const result = await users.insertOne({
       name,
       email,
-      password,
-      phone,
-      address,
+      password: hashedPassword,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user.toObject();
-
-    return NextResponse.json(
-      { message: 'User created successfully', user: userWithoutPassword },
-      { status: 201 }
-    );
-  } catch (error: any) {
+    return NextResponse.json({
+      id: result.insertedId,
+      name,
+      email,
+    });
+  } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { error: 'Error creating user' },
+      { error: 'Failed to register user' },
       { status: 500 }
     );
   }
