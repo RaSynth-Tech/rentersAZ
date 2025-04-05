@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Product } from '../data/products';
+import type { Product } from '../types/product';
 import { FilterState } from '../types/product';
 import { ITEMS_PER_PAGE } from '../constants';
 

@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import Script from 'next/script';
-import { Product } from '@/app/lib/api';
+import { Product } from '@/app/types/product';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [imageError, setImageError] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  console.log(params);
   useEffect(() => {
     const fetchProduct = async () => {
       try {

@@ -3,7 +3,7 @@
 import { Card, CardContent, Box, Typography, Rating } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '../lib/api';
+import { Product } from '../types/product';
 import { memo } from 'react';
 
 interface ProductCardProps {

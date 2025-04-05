@@ -28,7 +28,9 @@ export async function GET(request: Request) {
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
     
+    console.log('Fetching products with query:', query);
     const products = await Product.find(query);
+    console.log(`Found ${products.length} products`);
     
     return NextResponse.json(products);
   } catch (error) {
