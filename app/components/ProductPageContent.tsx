@@ -56,7 +56,7 @@ export default function ProductPageContent() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} md={3}>
           <Filters filters={filters} updateFilter={updateFilter} />

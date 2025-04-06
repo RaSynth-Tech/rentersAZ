@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import clientPromise from '@/app/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import clientPromise from '@/app/lib/mongodb-client';
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
+    const { email, password } = await request.json();
 
-    // Validate input
-    if (!name || !email || !password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
@@ -33,22 +31,19 @@ export async function POST(request: Request) {
 
     // Create user
     const result = await users.insertOne({
-      name,
       email,
       password: hashedPassword,
       createdAt: new Date(),
-      updatedAt: new Date(),
     });
 
-    return NextResponse.json({
-      id: result.insertedId,
-      name,
-      email,
-    });
+    return NextResponse.json(
+      { message: 'User created successfully', userId: result.insertedId },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { error: 'Failed to register user' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
