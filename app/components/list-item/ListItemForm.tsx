@@ -18,6 +18,8 @@ import { SelectChangeEvent } from '@mui/material';
 import { categories } from '../../data/products';
 import ImageUpload from './ImageUpload'; // Import the updated ImageUpload component
 import { ThemeProvider } from '../layout/ThemeProvider';
+import { v4 as uuidv4 } from 'uuid';
+import { itemsService } from '../../services/items.service';
 
 
 interface FormData {
@@ -25,7 +27,7 @@ interface FormData {
   description: string;
   price: string;
   category: string;
-  images: string[];
+  images: File[];
   location: {
     address: string;
     city: string;
@@ -87,10 +89,14 @@ export default function ListItemForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Upload images first using the items service
+      const uploadedImageUrls = await itemsService.uploadImages(formData.images, formData.category);
+
       // Transform form data to match your product schema
       const productData = {
         ...formData,
         price: Number(formData.price),
+        images: uploadedImageUrls,
         ownerId: 'temp-user-id', // Replace with actual user ID
         ownerName: 'John Doe', // Replace with actual user name
         ownerRating: 5,
@@ -239,10 +245,10 @@ export default function ListItemForm() {
           <Grid item xs={12}>
             <ImageUpload
               category={formData.category}
-              onImagesUploaded={(urls) =>
+              onImagesChange={(files) =>
                 setFormData((prev) => ({
                   ...prev,
-                  images: urls,
+                  images: files,
                 }))
               }
             />
