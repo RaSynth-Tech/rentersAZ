@@ -21,6 +21,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import { config } from '@/app/config/config';
 import LoginModal from '../auth/LoginModal';
+import { useSession, signOut } from 'next-auth/react';
 
 // Memoize the search input component
 const SearchInput = memo(({ 
@@ -96,18 +97,11 @@ CitySelect.displayName = 'CitySelect';
 function NavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
+  console.log(session);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
-  useEffect(() => {
-    // Check if user is logged in
-    if (typeof window !== 'undefined') {
-      const userData = localStorage.getItem('userData');
-      setIsLoggedIn(!!userData);
-    }
-  }, []);
 
   useEffect(() => {
     // Set initial values from URL
@@ -147,12 +141,10 @@ function NavbarContent() {
     setIsLoginModalOpen(true);
   }, []);
 
-  const handleLogout = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('userData');
-      setIsLoggedIn(false);
-    }
-  }, []);
+  const handleLogout = useCallback(async () => {
+    await signOut({ redirect: false });
+    router.refresh();
+  }, [router]);
 
   return (
     <AppBar position="sticky" color="default" elevation={1}>
@@ -215,7 +207,7 @@ function NavbarContent() {
             >
               List Item
             </Button>
-            {isLoggedIn ? (
+            {status === 'authenticated' ? (
               <Button
                 variant="outlined"
                 color="primary"

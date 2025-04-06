@@ -19,6 +19,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import GoogleIcon from '@mui/icons-material/Google';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
 
 interface LoginModalProps {
   open: boolean;
@@ -38,6 +40,7 @@ interface RegisterFormData extends LoginFormData {
 export default function LoginModal({ open, onClose }: LoginModalProps) {
   const router = useRouter();
   const theme = useTheme();
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState<LoginFormData | RegisterFormData>({
     email: '',
@@ -70,25 +73,55 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
     setError('');
 
     try {
-      const endpoint = activeTab === 0 ? '/api/auth/login' : '/api/auth/register';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      if (activeTab === 0) {
+        // Login with credentials
+        const result = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        });
 
-      const data = await response.json();
+        if (result?.error) {
+          throw new Error(result.error);
+        }
 
-      if (!response.ok) {
-        throw new Error(data.error || (activeTab === 0 ? 'Login failed' : 'Registration failed'));
+        toast.success('Successfully logged in!');
+        onClose();
+        router.refresh();
+      } else {
+        // Register new user
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Registration failed');
+        }
+
+        // After successful registration, sign in the user
+        const signInResult = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        });
+
+        if (signInResult?.error) {
+          throw new Error(signInResult.error);
+        }
+
+        toast.success('Successfully registered and logged in!');
+        onClose();
+        router.refresh();
       }
-
-      onClose();
-      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      toast.error(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -96,10 +129,23 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
 
   const handleGoogleLogin = async () => {
     try {
-      // Implement Google OAuth login
-      window.location.href = '/api/auth/google';
+      setIsLoading(true);
+      const result = await signIn('google', {
+        redirect: false,
+      });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      toast.success('Successfully logged in with Google!');
+      onClose();
+      router.refresh();
     } catch (err) {
       setError('Failed to login with Google');
+      toast.error('Failed to login with Google');
+    } finally {
+      setIsLoading(false);
     }
   };
 

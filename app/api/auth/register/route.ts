@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const client = await clientPromise;
-    const db = client.db('renteraz');
+    const db = client.db('rentersaz');
     const users = db.collection('users');
 
     // Check if user already exists
