@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Get the pathname of the request
   const path = request.nextUrl.pathname;
 
   // Define public paths that don't require authentication
   const isPublicPath = path === '/auth/login' || path === '/auth/register';
 
-  // For client-side routes, we'll handle auth in the components
+  // For client-side routes and API routes, we'll handle auth in the components
   if (path.startsWith('/_next') || path.startsWith('/api')) {
     return NextResponse.next();
   }
@@ -18,7 +19,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For protected paths, allow access (auth will be handled client-side)
+  // Check if the user is authenticated
+  const token = await getToken({ req: request });
+  
+  // If the user is not authenticated and trying to access a protected route, redirect to login
+  if (!token && (path === '/list' || path.startsWith('/profile') || path.startsWith('/my-items'))) {
+    const url = new URL('/auth/login', request.url);
+    url.searchParams.set('callbackUrl', path);
+    return NextResponse.redirect(url);
+  }
+
+  // For all other paths, allow access
   return NextResponse.next();
 }
 
@@ -28,7 +39,9 @@ export const config = {
     '/',
     '/auth/login',
     '/auth/register',
+    '/list',
     '/profile/:path*',
+    '/my-items/:path*',
     '/api/protected/:path*',
   ],
 }; 

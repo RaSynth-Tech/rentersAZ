@@ -3,7 +3,7 @@
 import { Card, CardContent, Box, Typography, Rating } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '../types/product';
+import { Product } from '../../types/product';
 import { memo } from 'react';
 
 interface ProductCardProps {
@@ -11,6 +11,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
+  console.log(product);
   return (
     <Link href={`/product/${product._id}`} style={{ textDecoration: 'none' }}>
       <Card

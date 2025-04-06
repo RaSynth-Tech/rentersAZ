@@ -34,19 +34,19 @@ export interface Product {
 }
 
 export const categories = [
-  'Electronics',
-  'Sports Equipment',
-  'Home & Garden',
-  'Vehicles',
-  'Fashion',
-  'Tools',
-  'Books',
-  'Musical Instruments',
-  'Party Supplies',
-  'Camping Gear',
-  'Houses',
-  'Apartments',
-] as const;
+  'electronics',
+  'sports equipment',
+  'home & garden',
+  'vehicles',
+  'fashion',
+  'tools',
+  'books',
+  'musical instruments',
+  'party supplies',
+  'camping gear',
+  'houses',
+  'apartments',
+] as const; 
 
 export const subcategories = {
   'Houses': [

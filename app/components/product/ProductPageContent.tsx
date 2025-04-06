@@ -1,10 +1,10 @@
 'use client';
 
 import { Box, Grid, Container, CircularProgress } from '@mui/material';
-import { Filters } from './Filters';
-import ProductGrid from './ProductGrid';
-import { useProductFilters } from '../hooks/useProductFilters';
-import { useProducts } from '../context/ProductContext';
+import { Filters } from './../Filters';
+import ProductGrid from './../product/ProductGrid';
+import { useProductFilters } from '../..//hooks/useProductFilters';
+import { useProducts } from '../../context/ProductContext';
 
 export default function ProductPageContent() {
   const { products, loading, error, pagination } = useProducts();

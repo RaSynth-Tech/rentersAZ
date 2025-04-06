@@ -1,7 +1,6 @@
 const API_BASE_URL = '/api';
 
 export interface Product {
-  id: string;
   title: string;
   description: string;
   price: number;
