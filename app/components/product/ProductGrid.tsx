@@ -4,7 +4,7 @@ import { Grid, CircularProgress, Container, Box } from '@mui/material';
 import ProductCard from './ProductCard';
 import type { Product } from '../../types/product';
 import { useProducts } from '../../context/ProductContext';
-import ViewMoreButton from '../ViewMoreButton';
+import ViewMoreButton from './ViewMoreButton';
 
 interface ProductGridProps {
   products: Product[];

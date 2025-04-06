@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useProducts } from '../context/ProductContext';
+import { useProducts } from '../../context/ProductContext';
 import { CircularProgress, Button, Box } from '@mui/material';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 

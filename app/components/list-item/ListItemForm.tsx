@@ -17,6 +17,8 @@ import {
 import { SelectChangeEvent } from '@mui/material';
 import { categories } from '../../data/products';
 import ImageUpload from './ImageUpload'; // Import the updated ImageUpload component
+import { ThemeProvider } from '../layout/ThemeProvider';
+
 
 interface FormData {
   title: string;
@@ -250,12 +252,13 @@ export default function ListItemForm() {
             <Button
               type="submit"
               fullWidth
+              color="primary"
               variant="contained"
               size="large"
               sx={{ mt: 2 }}
             >
               List Item
-            </Button>
+              </Button>
           </Grid>
         </Grid>
       </Box>
