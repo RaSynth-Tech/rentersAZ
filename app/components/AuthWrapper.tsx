@@ -1,35 +1,35 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import LoginModal from './auth/LoginModal';
 
-// Define public and protected paths
-const publicPaths = ['/', '/auth/login', '/auth/register'];
+// Define protected paths (update this list based on your app)
 const protectedPaths = ['/profile', '/dashboard', '/settings'];
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is authenticated
-    const isAuthenticated = typeof window !== 'undefined' && !!localStorage.getItem('userData');
+    // Wait until the session status is determined
+    if (status === 'loading') return;
 
-    // Handle public paths
-    if (publicPaths.includes(pathname)) {
-      if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/register')) {
-        router.push('/');
-      }
-      return;
+    // If current route is protected and user is not authenticated, open the modal
+    if (protectedPaths.some((path) => pathname.startsWith(path)) && !session) {
+      setLoginModalOpen(true);
+    } else {
+      setLoginModalOpen(false);
     }
+  }, [pathname, session, status]);
 
-    // Handle protected paths
-    if (protectedPaths.some(path => pathname.startsWith(path))) {
-      if (!isAuthenticated) {
-        router.push('/auth/login');
-      }
-    }
-  }, [pathname, router]);
-
-  return <>{children}</>;
-} 
+  return (
+    <>
+      {children}
+      <LoginModal open={isLoginModalOpen} onClose={() => setLoginModalOpen(false)} />
+    </>
+  );
+}

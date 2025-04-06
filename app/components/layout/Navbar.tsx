@@ -17,19 +17,22 @@ import {
   SelectChangeEvent,
   InputAdornment,
   CircularProgress,
+  Avatar,
+  Tooltip,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import PersonIcon from '@mui/icons-material/Person';
 import { config } from '@/app/config/config';
 import LoginModal from '../auth/LoginModal';
 import { useSession, signOut } from 'next-auth/react';
 
 // Memoize the search input component
-const SearchInput = memo(({ 
-  searchQuery, 
-  onSearch, 
-  onKeyPress, 
-  onChange 
-}: { 
+const SearchInput = memo(({
+  searchQuery,
+  onSearch,
+  onKeyPress,
+  onChange
+}: {
   searchQuery: string;
   onSearch: () => void;
   onKeyPress: (event: React.KeyboardEvent) => void;
@@ -41,7 +44,7 @@ const SearchInput = memo(({
     value={searchQuery}
     onChange={onChange}
     onKeyPress={onKeyPress}
-    sx={{ 
+    sx={{
       flexGrow: 1,
       maxWidth: 400,
       '& .MuiOutlinedInput-root': {
@@ -63,10 +66,10 @@ const SearchInput = memo(({
 SearchInput.displayName = 'SearchInput';
 
 // Memoize the city select component
-const CitySelect = memo(({ 
-  selectedCity, 
-  onChange 
-}: { 
+const CitySelect = memo(({
+  selectedCity,
+  onChange
+}: {
   selectedCity: string;
   onChange: (event: SelectChangeEvent) => void;
 }) => (
@@ -98,7 +101,6 @@ function NavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
-  console.log(session);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -146,15 +148,19 @@ function NavbarContent() {
     router.refresh();
   }, [router]);
 
+  const handleProfile = useCallback(() => {
+    router.push('/profile');
+  }, [router]);
+
   return (
-    <AppBar position="sticky" color="default" elevation={1}>
+    <AppBar position="sticky" color="default" elevation={2} sx={{ backgroundColor: '#fff' }}>
       <Container maxWidth="xl">
-        <Toolbar disableGutters>
+        <Toolbar disableGutters sx={{ py: 1 }}>
           <Typography
             variant="h6"
             component="div"
-            sx={{ 
-              flexGrow: 0, 
+            sx={{
+              flexGrow: 0,
               mr: 4,
               fontWeight: 700,
               color: 'black',
@@ -178,59 +184,66 @@ function NavbarContent() {
             />
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, ml: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, ml: 2, alignItems: 'center' }}>
             <Button
               variant="contained"
-              color="primary"
               onClick={() => router.push('/')}
               sx={{
                 backgroundColor: 'black',
                 color: 'white',
-                '&:hover': {
-                  backgroundColor: '#000000b5;',
-                },
+                textTransform: 'none',
+                '&:hover': { backgroundColor: '#000000b5' },
               }}
             >
               Rent Now
             </Button>
             <Button
               variant="contained"
-              color="primary"
               onClick={() => router.push('/list')}
               sx={{
                 backgroundColor: 'black',
                 color: 'white',
-                '&:hover': {
-                  backgroundColor: '#000000b5;',
-                },
+                textTransform: 'none',
+                '&:hover': { backgroundColor: '#000000b5' },
               }}
             >
               List Item
             </Button>
             {status === 'authenticated' ? (
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={handleLogout}
-                sx={{
-                  borderColor: 'black',
-                  color: 'black',
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                    color: 'primary.main',
-                  },
-                }}
-              >
-                Logout
-              </Button>
+              <>
+                <Tooltip title="Profile">
+                  <IconButton onClick={handleProfile} size="small">
+                    {session?.user?.image ? (
+                      <Avatar src={session.user.image} alt={session.user.name} />
+                    ) : (
+                      <PersonIcon fontSize="large" />
+                    )}
+                  </IconButton>
+                </Tooltip>
+                <Button
+                  variant="outlined"
+                  onClick={handleLogout}
+                  sx={{
+                    borderColor: 'black',
+                    color: 'black',
+                    textTransform: 'none',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      color: 'primary.main',
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
             ) : (
               <Button
                 variant="outlined"
-                color="primary"
                 onClick={handleLogin}
                 sx={{
                   borderColor: 'black',
                   color: 'black',
+                  textTransform: 'none',
                   '&:hover': {
                     borderColor: 'primary.main',
                     color: 'primary.main',
@@ -253,20 +266,20 @@ function NavbarContent() {
 
 function LoadingFallback() {
   return (
-    <AppBar position="sticky" color="default" elevation={1}>
+    <AppBar position="sticky" color="default" elevation={2} sx={{ backgroundColor: '#fff' }}>
       <Container maxWidth="xl">
-        <Toolbar disableGutters>
+        <Toolbar disableGutters sx={{ py: 1 }}>
           <Typography
             variant="h6"
             component="div"
-            sx={{ 
-              flexGrow: 0, 
+            sx={{
+              flexGrow: 0,
               mr: 4,
               fontWeight: 700,
               color: 'primary.main',
             }}
           >
-            Renteraz
+            RentersA-Z
           </Typography>
           <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
             <CircularProgress size={24} />
@@ -283,4 +296,4 @@ export default function Navbar() {
       <NavbarContent />
     </Suspense>
   );
-} 
+}

@@ -7,16 +7,25 @@ export interface User {
   email: string;
   image?: string;
   phone?: string;
-  location?: {
-    address: string;
+  address?: {
+    street: string;
     city: string;
     state: string;
-    country: string;
+    zipCode: string;
   };
-  preferences?: {
-    notifications: boolean;
-    newsletter: boolean;
-    darkMode: boolean;
+  profilePicture?: string;
+  dateOfBirth?: string;
+  bio?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  rentalPreferences?: {
+    preferredDuration: string;
+    budget: number;
+    categories: string[];
+  };
+  contactPreferences?: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
   };
   createdAt: string;
   updatedAt: string;
@@ -25,22 +34,31 @@ export interface User {
 export interface UpdateUserDto {
   name?: string;
   phone?: string;
-  location?: {
-    address: string;
-    city: string;
-    state: string;
-    country: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
   };
-  preferences?: {
-    notifications?: boolean;
-    newsletter?: boolean;
-    darkMode?: boolean;
+  profilePicture?: string;
+  dateOfBirth?: string;
+  bio?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  rentalPreferences?: {
+    preferredDuration?: string;
+    budget?: number;
+    categories?: string[];
+  };
+  contactPreferences?: {
+    email?: boolean;
+    sms?: boolean;
+    push?: boolean;
   };
 }
 
 class UserService {
   private readonly api = axios.create({
-    baseURL: `${config.api.baseUrl}/users`,
+    baseURL: '/api/users',
   });
 
   async getCurrentUser() {
@@ -49,6 +67,7 @@ class UserService {
   }
 
   async updateUser(userId: string, updateData: UpdateUserDto) {
+    console.log(updateData)
     const { data } = await this.api.patch(`/${userId}`, updateData);
     return data as User;
   }
@@ -68,8 +87,8 @@ class UserService {
     return data;
   }
 
-  async updatePreferences(userId: string, preferences: UpdateUserDto['preferences']) {
-    const { data } = await this.api.patch(`/${userId}/preferences`, preferences);
+  async updatePreferences(userId: string, contactPreferences: UpdateUserDto['contactPreferences']) {
+    const { data } = await this.api.patch(`/${userId}/preferences`, { contactPreferences });
     return data;
   }
 

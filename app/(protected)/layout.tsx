@@ -10,9 +10,9 @@ export default async function ProtectedLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
-    redirect('/auth/login');
-  }
+  // if (!session) {
+  //   redirect('/auth/logins');
+  // }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
