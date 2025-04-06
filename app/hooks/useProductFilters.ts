@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import type { Product } from '../types/product';
 import { FilterState } from '../types/product';
-import { ITEMS_PER_PAGE } from '../constants';
 
 export function useProductFilters(products: Product[]) {
-  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
   const [filters, setFilters] = useState<FilterState>({
     selectedCategories: [],
     selectedSubcategories: {},
@@ -30,23 +28,13 @@ export function useProductFilters(products: Product[]) {
     return matchesCategories && matchesSubcategories && matchesSearch && matchesCity;
   });
 
-  const paginatedProducts = filteredProducts.slice(0, displayCount);
-
-  const handleLoadMore = () => {
-    setDisplayCount(prev => prev + ITEMS_PER_PAGE);
-  };
-
   const updateFilter = (key: keyof FilterState, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setDisplayCount(ITEMS_PER_PAGE);
   };
 
   return {
     filters,
     updateFilter,
     filteredProducts,
-    paginatedProducts,
-    displayCount,
-    handleLoadMore,
   };
 } 

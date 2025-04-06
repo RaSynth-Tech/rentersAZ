@@ -22,10 +22,12 @@ import {
 import Image from 'next/image';
 import Script from 'next/script';
 import { Product } from '@/app/types/product';
+import { useProducts } from '@/app/context/ProductContext';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { products, loading: productsLoading } = useProducts();
   const [isRenting, setIsRenting] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -39,6 +41,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        // First check if the product is in our context
+        const contextProduct = products.find(p => p.id === params.id || p._id === params.id);
+        
+        if (contextProduct) {
+          setProduct(contextProduct);
+          setIsLoading(false);
+          return;
+        }
+        
+        // If not in context, fetch from API
         const response = await fetch(`/api/products/${params.id}`);
         if (!response.ok) {
           throw new Error('Product not found');
@@ -53,10 +65,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       }
     };
 
-    fetchProduct();
-  }, [params.id]);
+    if (!productsLoading) {
+      fetchProduct();
+    }
+  }, [params.id, products, productsLoading]);
 
-  if (isLoading) {
+  if (isLoading || productsLoading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
         <CircularProgress />

@@ -1,51 +1,19 @@
 'use client';
 
 import { Box, Grid, Container, CircularProgress } from '@mui/material';
-import { useState, useEffect } from 'react';
 import { Filters } from './Filters';
 import ProductGrid from './ProductGrid';
 import { useProductFilters } from '../hooks/useProductFilters';
-import type { Product } from '../types/product';
+import { useProducts } from '../context/ProductContext';
 
 export default function ProductPageContent() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { products, loading, error, pagination } = useProducts();
 
   const {
     filters,
     updateFilter,
     filteredProducts,
-    paginatedProducts,
-    displayCount,
-    handleLoadMore,
   } = useProductFilters(products);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('/api/products');
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-        const data = await response.json();
-        // Ensure each product has an _id property
-        const productsWithId = data.map((product: any) => ({
-          ...product,
-          _id: product._id || product.id
-        }));
-        setProducts(productsWithId);
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setError(error instanceof Error ? error.message : 'An unknown error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   if (error) {
     return (
@@ -55,6 +23,9 @@ export default function ProductPageContent() {
     );
   }
 
+  // Only show loading spinner on initial load, not when loading more
+  const isInitialLoading = loading && products.length === 0;
+
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Grid container spacing={3}>
@@ -63,11 +34,8 @@ export default function ProductPageContent() {
         </Grid>
         <Grid item xs={12} md={9}>
           <ProductGrid 
-            products={paginatedProducts}
-            loading={loading}
-            displayCount={displayCount}
-            filteredProductsLength={filteredProducts.length}
-            handleLoadMore={handleLoadMore}
+            products={filteredProducts}
+            loading={isInitialLoading}
           />
         </Grid>
       </Grid>

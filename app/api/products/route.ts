@@ -12,6 +12,11 @@ export async function GET(request: Request) {
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     
+    // Pagination parameters
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit') as string) : 10;
+    const page = searchParams.get('page') ? parseInt(searchParams.get('page') as string) : 1;
+    const skip = (page - 1) * limit;
+    
     let query: any = {};
     
     if (category) {
@@ -29,10 +34,27 @@ export async function GET(request: Request) {
     }
     
     console.log('Fetching products with query:', query);
-    const products = await Product.find(query);
-    console.log(`Found ${products.length} products`);
     
-    return NextResponse.json(products);
+    // Get total count for pagination
+    const totalProducts = await Product.countDocuments(query);
+    
+    // Apply pagination
+    const products = await Product.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }); // Sort by newest first
+    
+    console.log(`Found ${products.length} products (page ${page}, limit ${limit})`);
+    
+    return NextResponse.json({
+      products,
+      pagination: {
+        total: totalProducts,
+        page,
+        limit,
+        totalPages: Math.ceil(totalProducts / limit)
+      }
+    });
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
