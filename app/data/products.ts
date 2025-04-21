@@ -4,6 +4,7 @@ export interface Product {
   description: string;
   price: number;
   category: string;
+  subcategory?: string;
   images: string[];
   ownerId: string;
   ownerName: string;
@@ -33,19 +34,19 @@ export interface Product {
 }
 
 export const categories = [
-  'Electronics',
-  'Sports Equipment',
-  'Home & Garden',
-  'Vehicles',
-  'Fashion',
-  'Tools',
-  'Books',
-  'Musical Instruments',
-  'Party Supplies',
-  'Camping Gear',
-  'Houses',
-  'Apartments',
-] as const;
+  'electronics',
+  'sports equipment',
+  'home & garden',
+  'vehicles',
+  'fashion',
+  'tools',
+  'books',
+  'musical instruments',
+  'party supplies',
+  'camping gear',
+  'houses',
+  'apartments',
+] as const; 
 
 export const subcategories = {
   'Houses': [
@@ -177,7 +178,7 @@ function getRandomRating(): number {
 }
 
 // Helper function to generate random location
-function getRandomLocation(): { city: string; state: string; country: string } {
+function getRandomLocation(): { address: string; city: string; state: string; country: string } {
   const cities = [
     'Bangalore',
     'Mumbai',
@@ -192,6 +193,7 @@ function getRandomLocation(): { city: string; state: string; country: string } {
   ];
   const city = cities[Math.floor(Math.random() * cities.length)];
   return {
+    address: `${Math.floor(Math.random() * 1000)} Main Street, ${city}`,
     city,
     state: 'Maharashtra',
     country: 'India',
@@ -231,9 +233,12 @@ export function generateProducts(count: number = 50) {
     const availability = getRandomAvailability();
     const categoryImageArray = categoryImages[category as keyof typeof categoryImages] || categoryImages.Electronics;
     const images = categoryImageArray;
+    const ownerId = `owner_${Math.floor(Math.random() * 1000)}`;
+    const ownerName = `Owner ${Math.floor(Math.random() * 1000)}`;
+    const ownerRating = Number((Math.random() * (5 - 3.5) + 3.5).toFixed(1));
 
     products.push({
-      id: i,
+      id: i.toString(),
       title: `${subcategory ? `${subcategory} ` : ''}${category} ${i}`,
       description: `A high-quality ${category.toLowerCase()}${subcategory ? ` - ${subcategory}` : ''} available for rent. Perfect for your needs.`,
       price,
@@ -243,6 +248,13 @@ export function generateProducts(count: number = 50) {
       rating: getRandomRating(),
       location,
       availability,
+      ownerId,
+      ownerName,
+      ownerRating,
+      status: 'available',
+      reviews: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
   }
 

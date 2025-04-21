@@ -1,19 +1,35 @@
 const API_BASE_URL = '/api';
 
 export interface Product {
-  _id: string;
   title: string;
   description: string;
   price: number;
   category: string;
   subcategory?: string;
   images: string[];
+  ownerId: string;
+  ownerName: string;
+  ownerRating: number;
   location: {
+    address: string;
     city: string;
     state: string;
     country: string;
   };
+  availability: {
+    startDate: string;
+    endDate: string;
+  };
+  status: 'available' | 'rented' | 'maintenance';
   rating: number;
+  reviews: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

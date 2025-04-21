@@ -34,7 +34,7 @@ export const config = {
     'Surat',
   ],
   theme: {
-    primaryColor: '#2196f3',
+    primaryColor: '#000000',
     secondaryColor: '#f50057',
     navbar: {
       glass: true,

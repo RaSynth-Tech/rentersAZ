@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
-import clientPromise from '@/app/lib/mongodb';
+import connectDB from '@/app/lib/mongodb';
+import Product from '@/app/models/Product';
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const client = await clientPromise;
-    const db = client.db('renteraz');
-    const collection = db.collection('products');
-
-    const product = await collection.findOne({
-      _id: new ObjectId(params.id)
-    });
+    await connectDB();
+    const product = await Product.findById(params.id);
 
     if (!product) {
       return NextResponse.json(
@@ -37,29 +33,26 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    await connectDB();
     const body = await request.json();
-    const client = await clientPromise;
-    const db = client.db('renteraz');
-    const collection = db.collection('products');
-
-    const result = await collection.updateOne(
-      { _id: new ObjectId(params.id) },
+    
+    const product = await Product.findByIdAndUpdate(
+      params.id,
       {
-        $set: {
-          ...body,
-          updatedAt: new Date()
-        }
-      }
+        ...body,
+        updatedAt: new Date().toISOString()
+      },
+      { new: true }
     );
 
-    if (result.matchedCount === 0) {
+    if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(product);
   } catch (error) {
     console.error('Error updating product:', error);
     return NextResponse.json(
@@ -74,22 +67,17 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const client = await clientPromise;
-    const db = client.db('renteraz');
-    const collection = db.collection('products');
+    await connectDB();
+    const product = await Product.findByIdAndDelete(params.id);
 
-    const result = await collection.deleteOne({
-      _id: new ObjectId(params.id)
-    });
-
-    if (result.deletedCount === 0) {
+    if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(product);
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(

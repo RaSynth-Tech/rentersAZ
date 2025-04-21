@@ -40,26 +40,38 @@ export function Footer() {
               Quick Links
             </Typography>
             <Box>
-              <Link href="/about" passHref>
-                <MuiLink color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                  About Us
-                </MuiLink>
-              </Link>
-              <Link href="/terms" passHref>
-                <MuiLink color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                  Terms of Service
-                </MuiLink>
-              </Link>
-              <Link href="/privacy" passHref>
-                <MuiLink color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                  Privacy Policy
-                </MuiLink>
-              </Link>
-              <Link href="/contact" passHref>
-                <MuiLink color="text.secondary" sx={{ display: 'block' }}>
-                  Contact Us
-                </MuiLink>
-              </Link>
+              <MuiLink 
+                component={Link} 
+                href="/about" 
+                color="text.secondary" 
+                sx={{ display: 'block', mb: 1 }}
+              >
+                About Us
+              </MuiLink>
+              <MuiLink 
+                component={Link} 
+                href="/terms" 
+                color="text.secondary" 
+                sx={{ display: 'block', mb: 1 }}
+              >
+                Terms of Service
+              </MuiLink>
+              <MuiLink 
+                component={Link} 
+                href="/privacy" 
+                color="text.secondary" 
+                sx={{ display: 'block', mb: 1 }}
+              >
+                Privacy Policy
+              </MuiLink>
+              <MuiLink 
+                component={Link} 
+                href="/contact" 
+                color="text.secondary" 
+                sx={{ display: 'block' }}
+              >
+                Contact Us
+              </MuiLink>
             </Box>
           </Grid>
           <Grid item xs={12} sm={4}>

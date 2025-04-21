@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/app/lib/mongodb';
+import clientPromise from '@/app/lib/mongodb-client';
 
 export async function GET() {
   try {
@@ -10,18 +10,7 @@ export async function GET() {
     // Get all unique categories
     const categories = await collection.distinct('category');
 
-    // Get subcategories for each category
-    const categoriesWithSubcategories = await Promise.all(
-      categories.map(async (category) => {
-        const subcategories = await collection.distinct('subcategory', { category });
-        return {
-          category,
-          subcategories: subcategories.filter(Boolean) // Remove null/undefined values
-        };
-      })
-    );
-
-    return NextResponse.json(categoriesWithSubcategories);
+    return NextResponse.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json(

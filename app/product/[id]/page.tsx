@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
@@ -19,13 +19,15 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { products } from '@/app/data/products';
 import Image from 'next/image';
 import Script from 'next/script';
+import { Product } from '@/app/types/product';
+import { useProducts } from '@/app/context/ProductContext';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { products, loading: productsLoading } = useProducts();
   const [isRenting, setIsRenting] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -33,9 +35,48 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  console.log(params);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        // First check if the product is in our context
+        const contextProduct = products.find(p => p.id === params.id || p._id === params.id);
+        
+        if (contextProduct) {
+          setProduct(contextProduct);
+          setIsLoading(false);
+          return;
+        }
+        
+        // If not in context, fetch from API
+        const response = await fetch(`/api/products/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Product not found');
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        notFound();
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Convert string ID to number for comparison
-  const product = products.find(p => p.id === parseInt(params.id));
+    if (!productsLoading) {
+      fetchProduct();
+    }
+  }, [params.id, products, productsLoading]);
+
+  if (isLoading || productsLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   if (!product) {
     notFound();

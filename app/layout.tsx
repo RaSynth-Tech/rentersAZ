@@ -1,15 +1,14 @@
-'use client';
-
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from './components/layout/ThemeProvider';
-import Navbar from './components/layout/Navbar';
-import { Footer } from './components/layout/Footer';
-import { SessionProvider } from 'next-auth/react';
-import { metadata } from './metadata';
 import './globals.css';
+import ClientProviders from './components/providers/ClientProviders';
 
 const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'RentersAZ',
+  description: 'Your one-stop shop for renting anything in Arizona',
+};
 
 export default function RootLayout({
   children,
@@ -18,18 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-      </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          <SessionProvider>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-          </SessionProvider>
-        </ThemeProvider>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );
