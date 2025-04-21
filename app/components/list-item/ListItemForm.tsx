@@ -13,13 +13,15 @@ import {
   Select,
   MenuItem,
   Paper,
+  CircularProgress,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material';
 import { categories } from '../../data/products';
 import ImageUpload from './ImageUpload'; // Import the updated ImageUpload component
-import { ThemeProvider } from '../layout/ThemeProvider';
-import { v4 as uuidv4 } from 'uuid';
 import { itemsService } from '../../services/items.service';
+import { useProducts } from '../../context/ProductContext';
 
 
 interface FormData {
@@ -42,6 +44,10 @@ interface FormData {
 
 export default function ListItemForm() {
   const router = useRouter();
+  const { refreshProducts } = useProducts();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
@@ -88,6 +94,9 @@ export default function ListItemForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+    
     try {
       // Upload images first using the items service
       const uploadedImageUrls = await itemsService.uploadImages(formData.images, formData.category);
@@ -118,9 +127,22 @@ export default function ListItemForm() {
 
       const result = await response.json();
       console.log('Product created:', result);
-      router.push('/');
+      
+      // Refresh the products list in the context
+      await refreshProducts();
+      
+      // Show success message
+      setShowSuccess(true);
+      
+      // Redirect after a short delay
+      setTimeout(() => {
+        router.push('/');
+      }, 1500);
     } catch (error) {
       console.error('Error creating item:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create item');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -262,12 +284,44 @@ export default function ListItemForm() {
               variant="contained"
               size="large"
               sx={{ mt: 2 }}
+              disabled={isSubmitting}
             >
-              List Item
-              </Button>
+              {isSubmitting ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={24} color="inherit" />
+                  <span>Creating Item...</span>
+                </Box>
+              ) : (
+                'List Item'
+              )}
+            </Button>
           </Grid>
         </Grid>
       </Box>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          Item created successfully! Redirecting...
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }
